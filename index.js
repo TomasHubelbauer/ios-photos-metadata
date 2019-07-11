@@ -1,5 +1,7 @@
 window.addEventListener('load', () => {
   try {
+    const data = btoa('TEST');
+
     const canvas = document.createElement('canvas');
     canvas.width = 100;
     canvas.height = 100;
@@ -13,10 +15,10 @@ window.addEventListener('load', () => {
     context.strokeText(':-)', 0, 75);
 
     const previewImg = document.createElement('img');
-    previewImg.src = canvas.toDataURL();
+    previewImg.src = canvas.toDataURL() + data;
 
     const downloadA = document.createElement('a');
-    downloadA.href = canvas.toDataURL();
+    downloadA.href = canvas.toDataURL() + data;
     downloadA.append(previewImg);
 
     document.body.append(downloadA);
