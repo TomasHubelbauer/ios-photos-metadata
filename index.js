@@ -47,13 +47,31 @@ window.addEventListener('load', () => {
         uint8Array.set(new Uint8Array(textChunk), pngChunks.byteLength);
         uint8Array.set(new Uint8Array(iendChunk), pngChunks.byteLength + textChunk.byteLength);
 
-        const newBlob = new Blob([uint8Array], { type: blob.type });
+        // TODO: See if the MIME type has to be preserved
+        const url = URL.createObjectURL(new Blob([uint8Array], { type: blob.type }));
 
-        const newFileReader = new FileReader();
-        newFileReader.addEventListener('load', () => render(newFileReader.result));
-        newFileReader.readAsDataURL(newBlob);
+        const previewImg = document.getElementById('previewImg');
+        previewImg.src = url;
+        previewImg.title = url;
 
-        render(URL.createObjectURL(newBlob));
+        const downloadA = document.getElementById('downloadA');
+        downloadA.href = url;
+
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', process);
+
+        const processButton = document.getElementById('processButton');
+        processButton.addEventListener('click', process);
+
+        function process() {
+          const checkFileReader = new FileReader();
+          checkFileReader.addEventListener('load', () => {
+            // TODO: Find `tEXtComment\0{` or maybe just tEXt and read the length from the chunk length field, then compare
+            alert(checkFileReader.result.toString());
+          });
+
+          checkFileReader.readAsArrayBuffer(fileInput.files[0]);
+        }
       });
 
       fileReader.readAsArrayBuffer(blob);
@@ -62,18 +80,6 @@ window.addEventListener('load', () => {
     alert(error.messsage + '\n' + error.toString());
   }
 });
-
-function render(url) {
-  const previewImg = document.createElement('img');
-  previewImg.src = url;
-  previewImg.title = url;
-
-  const downloadA = document.createElement('a');
-  downloadA.href = url;
-  downloadA.append(previewImg);
-
-  document.body.append(downloadA);
-}
 
 /* https://github.com/image-js/fast-png/blob/master/src/common.ts */
 
