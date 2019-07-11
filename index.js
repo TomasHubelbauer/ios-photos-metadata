@@ -21,7 +21,7 @@ window.addEventListener('load', () => {
     downloadA.href = canvas.toDataURL() + data;
     downloadA.append(previewImg);
 
-    document.body.append(downloadA);
+    document.body.append(downloadA, document.createTextNode(data.length + ' characters of data appended'));
 
     canvas.remove();
   } catch (error) {
