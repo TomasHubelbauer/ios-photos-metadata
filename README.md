@@ -39,3 +39,13 @@ http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
 > 2147483647 bytes of chunk data, and a 4-byte cyclic redundancy check value.
 
 http://www.libpng.org/pub/png/book/chapter08.html
+
+---
+
+Right now I have a PNG generator which is capable of inserting a tEXt chunk with
+JSON before the IEND chunk and infrastructure that allows the user to reupload
+the downloaded image for checking if the contents of the chuck got disrupted.
+
+- [ ] Finalize the validator
+- [ ] Benchmark the maximum size of the chunk iOS will accept / not corrupt
+- [ ] Cross-reference or merge with the other repository
