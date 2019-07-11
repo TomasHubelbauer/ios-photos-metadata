@@ -23,3 +23,7 @@ This option is available for files that Safari can't display and SVGs (which it
 can display) but not files it can display (text files, HTML, …).
 
 On Wikipedia Save Image on an SVG works because it serves a pre-rendered PNG.
+
+I tried generating a PNG using `canvas` and appending Base64 encoded data to it
+but it breaks the image preview in Safari and as a result the Save Image option
+is no longer presented.
