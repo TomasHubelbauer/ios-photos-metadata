@@ -18,6 +18,10 @@ app.
 The above is not completely correct, some SVGs do show up, just my miminal one
 doesn't and I'm researching what is the minimal passable SVG to show up there.
 
+- Save Image doesn't work on `img` elements on long tap
+- Save Image doesn't appear for `svg` elements at all
+- 
+
 However SVG offers the Save to Files option in the Share modal in Safari.
 
 This is not a given for any kind of a file, text files do not show that option.
