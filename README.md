@@ -16,3 +16,5 @@ Photos, even though the Save Image option appears, nothing appears in the Photos
 app.
 
 However SVG offers the Save to Files option in the Share modal in Safari.
+
+This is not a given for any kind of a file, text files do not show that option.
