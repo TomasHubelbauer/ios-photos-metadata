@@ -11,20 +11,15 @@ a mobile web app.
 
 ---
 
-SVG as an inline element, `img` or `a[download]` doesn't seem to be save-able to
-Photos, even though the Save Image option appears, nothing appears in the Photos
-app.
+`svg` element has no long tap menu so no Save Image option.
 
-The above is not completely correct, some SVGs do show up, just my miminal one
-doesn't and I'm researching what is the minimal passable SVG to show up there.
+`img` element pointing to an SVG file has a Save Image long tap option but the
+image doesn't appear in Photos afterwards - it doesn't work.
 
-- Save Image doesn't work on `img` elements on long tap
-- Save Image doesn't appear for `svg` elements at all
-- 
+`a` element leading to an SVG file opens it in Safari with Save Image available
+under the Share button, but it doesn't work either, nothing appears in Photos.
+**However** a Save to Files option is available in the Share menu as well.
+This option is available for files that Safari can't display and SVGs (which it
+can display) but not files it can display (text files, HTML, …).
 
-However SVG offers the Save to Files option in the Share modal in Safari.
-
-This is not a given for any kind of a file, text files do not show that option.
-That's probably because Safari is able to display them, because binary files do.
-Most likely SVG sits between the two - Safari will display it but also offer you
-the Save to Files option.
+On Wikipedia Save Image on an SVG works because it serves a pre-rendered PNG.

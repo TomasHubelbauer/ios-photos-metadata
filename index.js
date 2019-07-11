@@ -1,8 +1,8 @@
 window.addEventListener('load', () => {
   const downloadA = document.createElement('a');
   downloadA.textContent = 'Download';
-  downloadA.download = 'backup.svg';
-  downloadA.href = `data:image/svg+xml,` + document.getElementsByTagName('svg')[0].outerHTML;
+  downloadA.download = 'backup.png';
+  downloadA.href = `data:image/png,TEST`;
 
   document.body.append(downloadA);
 });
