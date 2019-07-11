@@ -19,32 +19,28 @@ window.addEventListener('load', () => {
       fileReader.addEventListener('load', () => {
         /** @type {ArrayBuffer} */
         const arrayBuffer = fileReader.result;
-        const pngChunks = arrayBuffer.slice(0, -8);
-        const iendChunk = arrayBuffer.slice(-8);
+        const pngChunks = arrayBuffer.slice(0, -12);
+        const iendChunk = arrayBuffer.slice(-12);
+
+        const keyword = [...'Comment'].map(c => c.charCodeAt(0));
+        const payload = [...JSON.stringify({ test: 'TEST'.repeat(1000) })].map(c => c.charCodeAt(0));
+
+        const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + payload.length);
+        dataUint8Array.set([0x74, 0x45, 0x58, 0x74], 0);
+        dataUint8Array.set(keyword, 4);
+        dataUint8Array.set([0x0], 4 + keyword.length);
+        dataUint8Array.set(payload, 4 + keyword.length + 1);
+
+        const lengthUnit8Array = new Uint8Array(4);
+        const lengthdataView = new DataView(lengthUnit8Array.buffer);
+        lengthdataView.setUint32(0, dataUint8Array.length - 4);
+
+        const crcUnit8Array = new Uint8Array(4);
+        const crcDataView = new DataView(crcUnit8Array.buffer);
+        crcDataView.setUint32(0, crc(dataUint8Array, dataUint8Array.byteLength));
 
         // https://www.w3.org/TR/2003/REC-PNG-20031110/#11tEXt
-        const textChunkWithoutLengthAndCrc = new Uint8Array([
-          //0x00, 0x00, 0x00, 0x00, // Length of data field
-          0x74, 0x45, 0x58, 0x74, // tEXt
-          // 0 bytes of data
-          // CRC will be appended
-        ]);
-
-        const dataView = new DataView(textChunkWithoutLengthAndCrc.buffer);
-
-        const crcPart = new Uint8Array(4);
-        const dv = new DataView(crcPart.buffer);
-        dv.setUint32(0, crc(dataView, dataView.byteLength));
-
-        const textChunk = new Uint8Array(
-          [
-            0x00, 0x00, 0x00, 0x00, // Length of the data
-            ...textChunkWithoutLengthAndCrc,
-            ...crcPart, // CRC
-          ]
-        );
-
-        console.log(textChunk);
+        const textChunk = new Uint8Array([...lengthUnit8Array, ...dataUint8Array, ...crcUnit8Array]);
 
         const uint8Array = new Uint8Array(pngChunks.byteLength + textChunk.byteLength + iendChunk.byteLength);
         uint8Array.set(new Uint8Array(pngChunks), 0);
@@ -79,7 +75,9 @@ function render(url) {
   document.body.append(downloadA);
 }
 
-// https://github.com/image-js/fast-png/blob/master/src/common.ts
+/* https://github.com/image-js/fast-png/blob/master/src/common.ts */
+
+/** @type {Number[]} */
 const crcTable = [];
 for (let n = 0; n < 256; n++) {
   let c = n;
@@ -94,7 +92,7 @@ for (let n = 0; n < 256; n++) {
 }
 
 const initialCrc = 0xffffffff;
-function updateCrc(crc, data, length) {
+function updateCrc(/** @type {Number} */ crc, /** @type {Uint8Array} */ data, /** @type {Number} */ length) {
   let c = crc;
   for (let n = 0; n < length; n++) {
     c = crcTable[(c ^ data[n]) & 0xff] ^ (c >>> 8);
@@ -102,6 +100,6 @@ function updateCrc(crc, data, length) {
   return c;
 }
 
-function crc(data, length) {
+function crc(/** @type {Uint8Array} */ data, /** @type {Number} */ length) {
   return (updateCrc(initialCrc, data, length) ^ initialCrc) >>> 0;
 }
