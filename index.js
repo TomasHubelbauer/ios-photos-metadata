@@ -1,7 +1,5 @@
 window.addEventListener('load', () => {
   try {
-    const data = btoa('TEST');
-
     const canvas = document.createElement('canvas');
     canvas.width = 100;
     canvas.height = 100;
@@ -15,16 +13,16 @@ window.addEventListener('load', () => {
     context.strokeText(':-)', 0, 75);
 
     const previewImg = document.createElement('img');
-    previewImg.src = canvas.toDataURL() + data;
+    previewImg.src = canvas.toDataURL();
 
     const downloadA = document.createElement('a');
-    downloadA.href = canvas.toDataURL() + data;
+    downloadA.href = canvas.toDataURL();
     downloadA.append(previewImg);
 
-    document.body.append(downloadA, document.createTextNode(data.length + ' characters of data appended'));
+    document.body.append(downloadA);
 
     canvas.remove();
   } catch (error) {
-    alert(error.messsage);
+    alert(error.messsage + '\n' + error.toString());
   }
 });

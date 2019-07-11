@@ -27,3 +27,15 @@ On Wikipedia Save Image on an SVG works because it serves a pre-rendered PNG.
 I tried generating a PNG using `canvas` and appending Base64 encoded data to it
 but it breaks the image preview in Safari and as a result the Save Image option
 is no longer presented.
+
+I will instead try to use a PNG textual chunk as those can go up to 2 gigabytes:
+
+> Text string can be of any length from zero bytes up to the maximum permissible
+> chunk size less the length of the keyword and separator.
+
+http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
+
+> Every chunk has the same structure: a 4-byte length, a 4-byte chunk type, 0 to
+> 2147483647 bytes of chunk data, and a 4-byte cyclic redundancy check value.
+
+http://www.libpng.org/pub/png/book/chapter08.html
