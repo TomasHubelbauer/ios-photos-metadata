@@ -6,14 +6,22 @@ window.addEventListener('load', () => {
     document.body.append(canvas);
 
     const context = canvas.getContext('2d');
-    context.fillText('TEST', 10, 20);
+    context.fillStyle = '#abcdef';
+    context.fillRect(0, 0, 100, 100);
+    context.strokeStyle = '#0080ff';
+    context.font = 'normal 100px sans-serif';
+    context.strokeText(':-)', 0, 75);
+
+    const previewImg = document.createElement('img');
+    previewImg.src = canvas.toDataURL();
 
     const downloadA = document.createElement('a');
-    downloadA.textContent = 'Download';
-    downloadA.download = 'backup.png';
     downloadA.href = canvas.toDataURL();
+    downloadA.append(previewImg);
 
     document.body.append(downloadA);
+
+    canvas.remove();
   } catch (error) {
     alert(error.messsage);
   }
