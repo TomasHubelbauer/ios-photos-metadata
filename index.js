@@ -6,7 +6,7 @@ window.addEventListener('load', () => {
     document.body.append(canvas);
 
     const context = canvas.getContext('2d');
-    context.fillRect(0, 0, 100, 100);
+    context.fillText('TEST', 10, 20);
 
     const downloadA = document.createElement('a');
     downloadA.textContent = 'Download';
