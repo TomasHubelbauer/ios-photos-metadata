@@ -46,20 +46,22 @@ Right now I have a PNG generator which is capable of inserting a tEXt chunk with
 JSON before the IEND chunk and infrastructure that allows the user to reupload
 the downloaded image for checking if the contents of the chuck got disrupted.
 
-## Tests
-
-Here is a table where I capture sizes of payload that I checked.
-
-| Length | Success |
-|--------|---------|
-| 4011   | Yes     |
-
-> Length is the byte length of the `tEXt` chunk payload without the keyword and
-> the `NUL` character (the JSON bytes only)
+So far the largest payload I was able to generate and restore was **10 MB**.
 
 ## To-Do
 
-Find the largest chunk that will not get corrupted by iOS.
+Find the largest chunk that will not get corrupted by iOS. So far:
+
+- 10M works!
+- 15M freezes during generation?
+- 20M crashes tab
+- 25M crashes and restores tab during generation
+- 50M freezes during generation?
+- 100M crashes and restores tab during generation
+
+Do not generate nor compare as strings, instead generate bytes directly to
+`dataUint8Array` and remove `payload` (and maybe `keyword`) and compare by
+checking that all bytes in `slice` have the same value - the char code of `_`.
 
 Cross-reference or merge with the `ios-photos-metadata` repository.
 
