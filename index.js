@@ -17,6 +17,9 @@ window.addEventListener('load', () => {
   context.fillText(':-)', 10, 190);
   context.fillText(new Date().toLocaleString(), 10, 245);
 
+  const size = 1000;
+  const data = JSON.stringify({ test: 'TEST'.repeat(size) });
+
   const fileReader = new FileReader();
   fileReader.addEventListener('load', () => {
     /** @type {ArrayBuffer} */
@@ -25,7 +28,7 @@ window.addEventListener('load', () => {
     const iendChunk = new Uint8Array(arrayBuffer.slice(-12));
 
     const keyword = [...'Comment'].map(c => c.charCodeAt(0));
-    const payload = [...JSON.stringify({ test: 'TEST'.repeat(1000) })].map(c => c.charCodeAt(0));
+    const payload = [...data].map(c => c.charCodeAt(0));
 
     const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + payload.length);
     dataUint8Array.set([0x74, 0x45, 0x58, 0x74], 0);
@@ -49,6 +52,8 @@ window.addEventListener('load', () => {
     uint8Array.set(textChunk, pngChunks.byteLength);
     uint8Array.set(iendChunk, pngChunks.byteLength + textChunk.byteLength);
 
+    document.body.append(document.createTextNode(`A tEXt chunk placed at index ${pngChunks.byteLength + 4} with length of ${dataUint8Array.length}.`));
+
     const previewImg = document.getElementById('previewImg');
     previewImg.src = URL.createObjectURL(new Blob([uint8Array]));
 
@@ -56,8 +61,30 @@ window.addEventListener('load', () => {
     fileInput.addEventListener('change', () => {
       const fileReader = new FileReader();
       fileReader.addEventListener('load', () => {
-        // TODO: Find `tEXtComment\0{` or maybe just tEXt and read the length from the chunk length field, then compare
-        alert(fileReader.result.toString());
+        /** @type {ArrayBuffer} */
+        const arrayBuffer = fileReader.result;
+        const uint8Array = new Uint8Array(arrayBuffer);
+        let index = 0;
+        while (index < arrayBuffer.byteLength) {
+          if (uint8Array[index] === 0x74 && uint8Array[index + 1] === 0x45 && uint8Array[index + 2] === 0x58 && uint8Array[index + 3] === 0x74) {
+            break;
+          }
+
+          index++;
+        }
+
+        if (index === arrayBuffer.byteLength) {
+          document.body.append(document.createTextNode('No tEXt chunk was found in the image.'));
+          return;
+        }
+
+        const lengthDataView = new DataView(arrayBuffer, index - 4, 4);
+        const length = lengthDataView.getUint32(0);
+        document.body.append(document.createTextNode(`tEXt chunk found at index ${index + 4}! Length: ${length}.`));
+
+        const slice = new Uint8Array(arrayBuffer, index + 4 + keyword.length + 1, length - keyword.length - 1);
+        const text = String.fromCharCode(...slice);
+        document.body.append(document.createTextNode(text === data ? `The metadata of length ${text.length} match!!!` : 'The metadata DO NOT MATCH!'));
       });
 
       fileReader.readAsArrayBuffer(fileInput.files[0]);
