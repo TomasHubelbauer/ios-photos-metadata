@@ -94,13 +94,14 @@ function generate(/** @type {Number} */ size) {
       const iendChunk = new Uint8Array(arrayBuffer.slice(-12));
 
       const keyword = [...'Comment'].map(c => c.charCodeAt(0));
-      const payload = [...'_'.repeat(size)].map(c => c.charCodeAt(0));
 
-      const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + payload.length);
+      const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + size);
       dataUint8Array.set([0x74, 0x45, 0x58, 0x74], 0);
       dataUint8Array.set(keyword, 4);
       dataUint8Array.set([0x0], 4 + keyword.length);
-      dataUint8Array.set(payload, 4 + keyword.length + 1);
+      for (let index = 0; index < size; index++) {
+        dataUint8Array.set([95 /* Underscore */], 4 + keyword.length + 1 + index);
+      }
 
       const lengthUnit8Array = new Uint8Array(4);
       const lengthdataView = new DataView(lengthUnit8Array.buffer);
@@ -162,13 +163,10 @@ function validate(/** @type {ArrayBuffer} */ arrayBuffer, /** @type {Number} */ 
   }
 
   const slice = new Uint8Array(arrayBuffer, index + 4 + 'Comment\0'.length, length - 'Comment\0'.length);
-  let text = '';
   for (let byte of slice) {
-    text += String.fromCharCode(byte);
-  }
-
-  if (text !== '_'.repeat(length - 'Comment\0'.length)) {
-    throw new Error('The tEXt chunk contents do not match!');
+    if (byte !== 95 /* Underscore */) {
+      throw new Error('The tEXt chunk contents do not match!');
+    }
   }
 }
 
