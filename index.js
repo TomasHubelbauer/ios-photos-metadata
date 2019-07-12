@@ -10,65 +10,58 @@ window.addEventListener('load', () => {
   context.font = 'normal 100px sans-serif';
   context.strokeText(':-)', 0, 75);
 
-  canvas.toBlob(blob => {
-    const fileReader = new FileReader();
-    fileReader.addEventListener('load', () => {
-      /** @type {ArrayBuffer} */
-      const arrayBuffer = fileReader.result;
-      const pngChunks = arrayBuffer.slice(0, -12);
-      const iendChunk = arrayBuffer.slice(-12);
+  const fileReader = new FileReader();
+  fileReader.addEventListener('load', () => {
+    /** @type {ArrayBuffer} */
+    const arrayBuffer = fileReader.result;
+    const pngChunks = arrayBuffer.slice(0, -12);
+    const iendChunk = arrayBuffer.slice(-12);
 
-      const keyword = [...'Comment'].map(c => c.charCodeAt(0));
-      const payload = [...JSON.stringify({ test: 'TEST'.repeat(1000) })].map(c => c.charCodeAt(0));
+    const keyword = [...'Comment'].map(c => c.charCodeAt(0));
+    const payload = [...JSON.stringify({ test: 'TEST'.repeat(1000) })].map(c => c.charCodeAt(0));
 
-      const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + payload.length);
-      dataUint8Array.set([0x74, 0x45, 0x58, 0x74], 0);
-      dataUint8Array.set(keyword, 4);
-      dataUint8Array.set([0x0], 4 + keyword.length);
-      dataUint8Array.set(payload, 4 + keyword.length + 1);
+    const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + payload.length);
+    dataUint8Array.set([0x74, 0x45, 0x58, 0x74], 0);
+    dataUint8Array.set(keyword, 4);
+    dataUint8Array.set([0x0], 4 + keyword.length);
+    dataUint8Array.set(payload, 4 + keyword.length + 1);
 
-      const lengthUnit8Array = new Uint8Array(4);
-      const lengthdataView = new DataView(lengthUnit8Array.buffer);
-      lengthdataView.setUint32(0, dataUint8Array.length - 4);
+    const lengthUnit8Array = new Uint8Array(4);
+    const lengthdataView = new DataView(lengthUnit8Array.buffer);
+    lengthdataView.setUint32(0, dataUint8Array.length - 4);
 
-      const crcUnit8Array = new Uint8Array(4);
-      const crcDataView = new DataView(crcUnit8Array.buffer);
-      crcDataView.setUint32(0, crc(dataUint8Array, dataUint8Array.byteLength));
+    const crcUnit8Array = new Uint8Array(4);
+    const crcDataView = new DataView(crcUnit8Array.buffer);
+    crcDataView.setUint32(0, crc(dataUint8Array, dataUint8Array.byteLength));
 
-      // https://www.w3.org/TR/2003/REC-PNG-20031110/#11tEXt
-      const textChunk = new Uint8Array([...lengthUnit8Array, ...dataUint8Array, ...crcUnit8Array]);
+    // https://www.w3.org/TR/2003/REC-PNG-20031110/#11tEXt
+    const textChunk = new Uint8Array([...lengthUnit8Array, ...dataUint8Array, ...crcUnit8Array]);
 
-      const uint8Array = new Uint8Array(pngChunks.byteLength + textChunk.byteLength + iendChunk.byteLength);
-      uint8Array.set(new Uint8Array(pngChunks), 0);
-      uint8Array.set(new Uint8Array(textChunk), pngChunks.byteLength);
-      uint8Array.set(new Uint8Array(iendChunk), pngChunks.byteLength + textChunk.byteLength);
+    const uint8Array = new Uint8Array(pngChunks.byteLength + textChunk.byteLength + iendChunk.byteLength);
+    uint8Array.set(new Uint8Array(pngChunks), 0);
+    uint8Array.set(new Uint8Array(textChunk), pngChunks.byteLength);
+    uint8Array.set(new Uint8Array(iendChunk), pngChunks.byteLength + textChunk.byteLength);
 
-      // TODO: See if the MIME type has to be preserved
-      const url = URL.createObjectURL(new Blob([uint8Array], { type: blob.type }));
+    // TODO: See if the MIME type has to be preserved
+    const url = URL.createObjectURL(new Blob([uint8Array]));
 
-      const previewImg = document.getElementById('previewImg');
-      previewImg.src = url;
-      previewImg.title = url;
+    const previewImg = document.getElementById('previewImg');
+    previewImg.src = url;
+    previewImg.title = url;
 
-      const fileInput = document.getElementById('fileInput');
-      fileInput.addEventListener('change', process);
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', () => {
+      const checkFileReader = new FileReader();
+      checkFileReader.addEventListener('load', () => {
+        // TODO: Find `tEXtComment\0{` or maybe just tEXt and read the length from the chunk length field, then compare
+        alert(checkFileReader.result.toString());
+      });
 
-      const processButton = document.getElementById('processButton');
-      processButton.addEventListener('click', process);
-
-      function process() {
-        const checkFileReader = new FileReader();
-        checkFileReader.addEventListener('load', () => {
-          // TODO: Find `tEXtComment\0{` or maybe just tEXt and read the length from the chunk length field, then compare
-          alert(checkFileReader.result.toString());
-        });
-
-        checkFileReader.readAsArrayBuffer(fileInput.files[0]);
-      }
+      checkFileReader.readAsArrayBuffer(fileInput.files[0]);
     });
-
-    fileReader.readAsArrayBuffer(blob);
   });
+
+  canvas.toBlob(blob => fileReader.readAsArrayBuffer(blob));
 });
 
 /* https://github.com/image-js/fast-png/blob/master/src/common.ts */

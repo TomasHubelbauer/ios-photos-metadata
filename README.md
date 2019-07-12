@@ -55,3 +55,6 @@ Benchmark the maximum size of the chunk iOS will accept / not corrupt.
 Cross-reference or merge with the `ios-photos-metadata` repository.
 
 Use `a[download]` when iOS 13 is out and it is supported in Safari.
+
+See if using a non-standard keyword (like the program name) will have the same
+treatment or if it will be handled differently by iOS.
