@@ -61,11 +61,6 @@ Here is a table where I capture sizes of payload that I checked.
 
 Find the largest chunk that will not get corrupted by iOS.
 
-Replace `String.fromCharCode` with something else when it starts failing because
-the spread arguments to it are too many. Probably a look which does that for
-chunks of maximal accepted length and then just concatenates the intermediate
-results will be enough.
-
 Cross-reference or merge with the `ios-photos-metadata` repository.
 
 Use `a[download]` when iOS 13 is out and it is supported in Safari.

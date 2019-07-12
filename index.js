@@ -162,7 +162,10 @@ function validate(/** @type {ArrayBuffer} */ arrayBuffer, /** @type {Number} */ 
   }
 
   const slice = new Uint8Array(arrayBuffer, index + 4 + 'Comment\0'.length, length - 'Comment\0'.length);
-  const text = String.fromCharCode(...slice);
+  let text = '';
+  for (let byte of slice) {
+    text += String.fromCharCode(byte);
+  }
 
   if (text !== '_'.repeat(length - 'Comment\0'.length)) {
     throw new Error('The tEXt chunk contents do not match!');
