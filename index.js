@@ -1,4 +1,69 @@
 window.addEventListener('load', () => {
+  renderIntro();
+});
+
+function renderIntro() {
+  const introP = document.createElement('p');
+  introP.textContent = 'This app will generate an image with application data in its metadata.';
+  const downloadP = document.createElement('p');
+  downloadP.textContent = 'Download it and upload it again to see if the metadata has been preserved.';
+  const sizeInput = document.createElement('input');
+  sizeInput.type = 'number';
+  sizeInput.placeholder = 'Payload size (B)';
+  const generateButton = document.createElement('button');
+  generateButton.textContent = 'Generate';
+  generateButton.addEventListener('click', async () => {
+    const size = sizeInput.valueAsNumber || 0;
+    const generatingP = document.createElement('p');
+    generatingP.textContent = 'Generating…';
+    document.body.append(generatingP);
+    const { url, index, length } = await generate(size);
+    renderGenerated(url, index, length);
+  });
+
+  sizeInput.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      generateButton.click();
+    }
+  });
+
+  document.body.innerHTML = '';
+  document.body.append(introP, downloadP, sizeInput, generateButton);
+}
+
+function renderGenerated(url, index, length) {
+  const previewImg = document.createElement('img');
+  previewImg.src = url;
+  const infoP = document.createElement('p');
+  infoP.textContent = 'The image contains application data in its metadata.';
+  const downloadP = document.createElement('p');
+  downloadP.textContent = 'Download it to Photos by long-pressing on it and selecting Save Image.';
+  const uploadP = document.createElement('p');
+  uploadP.textContent = 'Upload it back to see if the data was preserved by the Photos app/iOS:';
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.addEventListener('change', () => {
+    const fileReader = new FileReader();
+    fileReader.readAsArrayBuffer(fileInput.files[0]);
+    fileReader.addEventListener('load', () => {
+      try {
+        validate(fileReader.result, index, length);
+        renderValidated();
+      } catch (error) {
+        renderValidated(error);
+      }
+    });
+  });
+
+  document.body.innerHTML = '';
+  document.body.append(previewImg, infoP, downloadP, uploadP, fileInput);
+}
+
+function renderValidated(error) {
+  document.body.innerHTML = error || `The metadata were left intact!`;
+}
+
+function generate(/** @type {Number} */ size) {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 256;
@@ -17,83 +82,92 @@ window.addEventListener('load', () => {
   context.fillText(':-)', 10, 190);
   context.fillText(new Date().toLocaleString(), 10, 245);
 
-  const size = 1000;
-  const data = JSON.stringify({ test: 'TEST'.repeat(size) });
+  let promiseResolve;
+  let promiseReject;
 
   const fileReader = new FileReader();
   fileReader.addEventListener('load', () => {
-    /** @type {ArrayBuffer} */
-    const arrayBuffer = fileReader.result;
-    const pngChunks = new Uint8Array(arrayBuffer.slice(0, -12));
-    const iendChunk = new Uint8Array(arrayBuffer.slice(-12));
+    try {
+      /** @type {ArrayBuffer} */
+      const arrayBuffer = fileReader.result;
+      const pngChunks = new Uint8Array(arrayBuffer.slice(0, -12));
+      const iendChunk = new Uint8Array(arrayBuffer.slice(-12));
 
-    const keyword = [...'Comment'].map(c => c.charCodeAt(0));
-    const payload = [...data].map(c => c.charCodeAt(0));
+      const keyword = [...'Comment'].map(c => c.charCodeAt(0));
+      const payload = [...'_'.repeat(size)].map(c => c.charCodeAt(0));
 
-    const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + payload.length);
-    dataUint8Array.set([0x74, 0x45, 0x58, 0x74], 0);
-    dataUint8Array.set(keyword, 4);
-    dataUint8Array.set([0x0], 4 + keyword.length);
-    dataUint8Array.set(payload, 4 + keyword.length + 1);
+      const dataUint8Array = new Uint8Array(4 + keyword.length + 1 + payload.length);
+      dataUint8Array.set([0x74, 0x45, 0x58, 0x74], 0);
+      dataUint8Array.set(keyword, 4);
+      dataUint8Array.set([0x0], 4 + keyword.length);
+      dataUint8Array.set(payload, 4 + keyword.length + 1);
 
-    const lengthUnit8Array = new Uint8Array(4);
-    const lengthdataView = new DataView(lengthUnit8Array.buffer);
-    lengthdataView.setUint32(0, dataUint8Array.length - 4);
+      const lengthUnit8Array = new Uint8Array(4);
+      const lengthdataView = new DataView(lengthUnit8Array.buffer);
+      lengthdataView.setUint32(0, dataUint8Array.length - 4);
 
-    const crcUnit8Array = new Uint8Array(4);
-    const crcDataView = new DataView(crcUnit8Array.buffer);
-    crcDataView.setUint32(0, crc(dataUint8Array, dataUint8Array.byteLength));
+      const crcUnit8Array = new Uint8Array(4);
+      const crcDataView = new DataView(crcUnit8Array.buffer);
+      crcDataView.setUint32(0, crc(dataUint8Array, dataUint8Array.byteLength));
 
-    // https://www.w3.org/TR/2003/REC-PNG-20031110/#11tEXt
-    const textChunk = new Uint8Array([...lengthUnit8Array, ...dataUint8Array, ...crcUnit8Array]);
+      // https://www.w3.org/TR/2003/REC-PNG-20031110/#11tEXt
+      const textChunk = new Uint8Array([...lengthUnit8Array, ...dataUint8Array, ...crcUnit8Array]);
 
-    const uint8Array = new Uint8Array(pngChunks.byteLength + textChunk.byteLength + iendChunk.byteLength);
-    uint8Array.set(pngChunks, 0);
-    uint8Array.set(textChunk, pngChunks.byteLength);
-    uint8Array.set(iendChunk, pngChunks.byteLength + textChunk.byteLength);
+      const uint8Array = new Uint8Array(pngChunks.byteLength + textChunk.byteLength + iendChunk.byteLength);
+      uint8Array.set(pngChunks, 0);
+      uint8Array.set(textChunk, pngChunks.byteLength);
+      uint8Array.set(iendChunk, pngChunks.byteLength + textChunk.byteLength);
 
-    document.body.append(document.createTextNode(`A tEXt chunk placed at index ${pngChunks.byteLength + 4} with length of ${dataUint8Array.length}.`));
-
-    const previewImg = document.getElementById('previewImg');
-    previewImg.src = URL.createObjectURL(new Blob([uint8Array]));
-
-    const fileInput = document.getElementById('fileInput');
-    fileInput.addEventListener('change', () => {
-      const fileReader = new FileReader();
-      fileReader.addEventListener('load', () => {
-        /** @type {ArrayBuffer} */
-        const arrayBuffer = fileReader.result;
-        const uint8Array = new Uint8Array(arrayBuffer);
-        let index = 0;
-        while (index < arrayBuffer.byteLength) {
-          if (uint8Array[index] === 0x74 && uint8Array[index + 1] === 0x45 && uint8Array[index + 2] === 0x58 && uint8Array[index + 3] === 0x74) {
-            break;
-          }
-
-          index++;
-        }
-
-        if (index === arrayBuffer.byteLength) {
-          document.body.append(document.createTextNode('No tEXt chunk was found in the image.'));
-          return;
-        }
-
-        const lengthDataView = new DataView(arrayBuffer, index - 4, 4);
-        const length = lengthDataView.getUint32(0);
-        document.body.append(document.createTextNode(`tEXt chunk found at index ${index + 4}! Length: ${length}.`));
-
-        const slice = new Uint8Array(arrayBuffer, index + 4 + keyword.length + 1, length - keyword.length - 1);
-        const text = String.fromCharCode(...slice);
-        document.body.append(document.createTextNode(text === data ? `The metadata of length ${text.length} match!!!` : 'The metadata DO NOT MATCH!'));
+      promiseResolve({
+        url: URL.createObjectURL(new Blob([uint8Array])),
+        index: pngChunks.byteLength + 4,
+        length: dataUint8Array.length,
       });
-
-      fileReader.readAsArrayBuffer(fileInput.files[0]);
-      fileInput.remove();
-    });
+    } catch (error) {
+      promiseReject(error);
+    }
   });
 
   canvas.toBlob(blob => fileReader.readAsArrayBuffer(blob));
-});
+  return new Promise((resolve, reject) => {
+    promiseResolve = resolve;
+    promiseReject = reject;
+  });
+}
+
+function validate(/** @type {ArrayBuffer} */ arrayBuffer, /** @type {Number} */ position, /** @type {Number} */ size) {
+  const uint8Array = new Uint8Array(arrayBuffer);
+  let index = 0;
+  while (index < arrayBuffer.byteLength) {
+    if (uint8Array[index] === 0x74 && uint8Array[index + 1] === 0x45 && uint8Array[index + 2] === 0x58 && uint8Array[index + 3] === 0x74) {
+      break;
+    }
+
+    index++;
+  }
+
+  if (index === arrayBuffer.byteLength) {
+    throw new Error('No tEXt chunk was found in the image.');
+  }
+
+  const lengthDataView = new DataView(arrayBuffer, index - 4, 4);
+  const length = lengthDataView.getUint32(0);
+
+  if (index !== position) {
+    throw new Error('The tEXt chunk was found at a different index.');
+  }
+
+  if (length + 4 !== size) {
+    throw new Error('The tEXt chunk length does not match.');
+  }
+
+  const slice = new Uint8Array(arrayBuffer, index + 4 + 'Comment\0'.length, length - 'Comment\0'.length);
+  const text = String.fromCharCode(...slice);
+
+  if (text !== '_'.repeat(length - 'Comment\0'.length)) {
+    throw new Error('The tEXt chunk contents do not match!');
+  }
+}
 
 /* https://github.com/image-js/fast-png/blob/master/src/common.ts */
 

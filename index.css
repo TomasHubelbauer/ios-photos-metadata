@@ -7,7 +7,7 @@ p {
   text-align: center;
 }
 
-input[type=file] {
+input {
   display: block;
   margin: 0 auto;
 }

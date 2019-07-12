@@ -59,8 +59,6 @@ Here is a table where I capture sizes of payload that I checked.
 
 ## To-Do
 
-Add a UI for choosing the payload size to avoid needing to redeploy.
-
 Find the largest chunk that will not get corrupted by iOS.
 
 Replace `String.fromCharCode` with something else when it starts failing because
