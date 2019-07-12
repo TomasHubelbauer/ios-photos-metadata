@@ -1,0 +1,18 @@
+img {
+  display: block;
+  margin: 0 auto;
+}
+
+p {
+  text-align: center;
+}
+
+input[type=file] {
+  display: block;
+  margin: 0 auto;
+}
+
+button {
+  display: block;
+  margin: 0 auto;
+}

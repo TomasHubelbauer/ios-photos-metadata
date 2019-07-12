@@ -46,6 +46,12 @@ Right now I have a PNG generator which is capable of inserting a tEXt chunk with
 JSON before the IEND chunk and infrastructure that allows the user to reupload
 the downloaded image for checking if the contents of the chuck got disrupted.
 
-- [ ] Finalize the validator
-- [ ] Benchmark the maximum size of the chunk iOS will accept / not corrupt
-- [ ] Cross-reference or merge with the other repository
+## To-Do
+
+Finalize the validator.
+
+Benchmark the maximum size of the chunk iOS will accept / not corrupt.
+
+Cross-reference or merge with the `ios-photos-metadata` repository.
+
+Use `a[download]` when iOS 13 is out and it is supported in Safari.

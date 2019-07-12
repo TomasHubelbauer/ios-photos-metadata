@@ -54,9 +54,6 @@ window.addEventListener('load', () => {
         previewImg.src = url;
         previewImg.title = url;
 
-        const downloadA = document.getElementById('downloadA');
-        downloadA.href = url;
-
         const fileInput = document.getElementById('fileInput');
         fileInput.addEventListener('change', process);
 
