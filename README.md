@@ -45,7 +45,12 @@ So far the largest payload I was able to generate and restore was **18 MB**.
 generate at all. This is not super consistent as I expect it depends on
 available memory, power saver etc. Safe value might be around 15 MB.
 
+When the image is transfered using WhatsApp, it is converted to JPG so all PNG
+metadata is lost.
+
 ## To-Do
+
+Generate a JPG with EXIF metadata and see if WhatsApp will preserve the EXIF.
 
 Use `a[download]` when iOS 13 is out and it is supported in Safari.
 
