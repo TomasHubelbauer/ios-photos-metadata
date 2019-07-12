@@ -1,21 +1,28 @@
 window.addEventListener('load', () => {
   const canvas = document.createElement('canvas');
-  canvas.width = 100;
-  canvas.height = 100;
+  canvas.width = 256;
+  canvas.height = 256;
 
   const context = canvas.getContext('2d');
   context.fillStyle = '#abcdef';
-  context.fillRect(0, 0, 100, 100);
-  context.strokeStyle = '#0080ff';
-  context.font = 'normal 100px sans-serif';
-  context.strokeText(':-)', 0, 75);
+  context.fillRect(0, 0, 256, 256);
+  context.fillStyle = '#000';
+  context.font = 'normal 20px sans-serif';
+  context.fillText('This image contains', 10, 30);
+  context.fillText('application data in its', 10, 50);
+  context.fillText('metadata.', 10, 70);
+  context.fillText('The purpose of it is to', 10, 110);
+  context.fillText('see if iOS / the Photos', 10, 130);
+  context.fillText('app will preserve them.', 10, 150);
+  context.fillText(':-)', 10, 190);
+  context.fillText(new Date().toLocaleString(), 10, 245);
 
   const fileReader = new FileReader();
   fileReader.addEventListener('load', () => {
     /** @type {ArrayBuffer} */
     const arrayBuffer = fileReader.result;
-    const pngChunks = arrayBuffer.slice(0, -12);
-    const iendChunk = arrayBuffer.slice(-12);
+    const pngChunks = new Uint8Array(arrayBuffer.slice(0, -12));
+    const iendChunk = new Uint8Array(arrayBuffer.slice(-12));
 
     const keyword = [...'Comment'].map(c => c.charCodeAt(0));
     const payload = [...JSON.stringify({ test: 'TEST'.repeat(1000) })].map(c => c.charCodeAt(0));
@@ -38,26 +45,23 @@ window.addEventListener('load', () => {
     const textChunk = new Uint8Array([...lengthUnit8Array, ...dataUint8Array, ...crcUnit8Array]);
 
     const uint8Array = new Uint8Array(pngChunks.byteLength + textChunk.byteLength + iendChunk.byteLength);
-    uint8Array.set(new Uint8Array(pngChunks), 0);
-    uint8Array.set(new Uint8Array(textChunk), pngChunks.byteLength);
-    uint8Array.set(new Uint8Array(iendChunk), pngChunks.byteLength + textChunk.byteLength);
-
-    // TODO: See if the MIME type has to be preserved
-    const url = URL.createObjectURL(new Blob([uint8Array]));
+    uint8Array.set(pngChunks, 0);
+    uint8Array.set(textChunk, pngChunks.byteLength);
+    uint8Array.set(iendChunk, pngChunks.byteLength + textChunk.byteLength);
 
     const previewImg = document.getElementById('previewImg');
-    previewImg.src = url;
-    previewImg.title = url;
+    previewImg.src = URL.createObjectURL(new Blob([uint8Array]));
 
     const fileInput = document.getElementById('fileInput');
     fileInput.addEventListener('change', () => {
-      const checkFileReader = new FileReader();
-      checkFileReader.addEventListener('load', () => {
+      const fileReader = new FileReader();
+      fileReader.addEventListener('load', () => {
         // TODO: Find `tEXtComment\0{` or maybe just tEXt and read the length from the chunk length field, then compare
-        alert(checkFileReader.result.toString());
+        alert(fileReader.result.toString());
       });
 
-      checkFileReader.readAsArrayBuffer(fileInput.files[0]);
+      fileReader.readAsArrayBuffer(fileInput.files[0]);
+      fileInput.remove();
     });
   });
 
