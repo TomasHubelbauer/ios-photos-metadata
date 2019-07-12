@@ -18,7 +18,7 @@ for sharing or subsequent import to restore (need to navigate to the Files app.)
 
 Another option is the Photos app. Throughtout my research I have verified that
 the Photos app on iOS leaves PNG metadata intact and I have managed to store up
-to **10 MB** in a `tEXt` chunk of a PNG image that I was able to restore, too.
+to **18 MB** in a `tEXt` chunk of a PNG image that I was able to restore, too.
 
 The theoretical maximum for the `tEXt` chunk size is 2 GB:
 
@@ -40,13 +40,10 @@ before the `IEND` chunk and infrastructure that allows the user to reupload
 the downloaded image for checking if the contents of the chuck got disrupted or
 not. Using binary search, the user is able to zero in on the approximate limit:
 
-So far the largest payload I was able to generate and restore was **10 MB**.
-
-- 15M freezes during generation?
-- 20M crashes tab
-- 25M crashes and restores tab during generation
-- 50M freezes during generation?
-- 100M crashes and restores tab during generation
+So far the largest payload I was able to generate and restore was **18 MB**.
+19 MB manages to generate but crashes during validation. 20 MB struggles to
+generate at all. This is not super consistent as I expect it depends on
+available memory, power saver etc. Safe value might be around 15 MB.
 
 ## To-Do
 
