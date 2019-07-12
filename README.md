@@ -1,71 +1,50 @@
-# iOS SVG
+# iOS Photos Metadata
 
-[**LIVE**](https://tomashubelbauer.github.io/ios-svg)
+[**LIVE**](https://tomashubelbauer.github.io/ios-photos-metadata)
 
-I experiment to see if an SVG saved directly from a site (using long tap) or by
-an `a[download]` link is downloadable to iOS Photos and vieweable in there. Also
-I want to find out if when uploaded back the SVG is in any way altered by iOS.
+This repository contains research into ways of providing web apps with means of
+exporting data as files in way which is user-friendly for users of iOS Safari.
 
-I do this because I want to explore SVG image export as a backup mechanism for
-a mobile web app.
+iOS (as of version 12, version 13 might change things) doesn't offer a convenient
+way to manage general files. The Files app is available, but is not installed by
+default. Moreover, not all file types can be downloaded there and it's still very
+unwieldy to use as it lacks good file and folder management capabilities.
 
----
+Safari will offer you a Save to Files option for some files in the Share button
+menu when navigated to them directly, but not all. It will not do it for the file
+types it can display (HTML, TXT, but it will do it for SVG even though it can
+display it) but will for unknown files (and SVG). This is okay but is not great
+for sharing or subsequent import to restore (need to navigate to the Files app.)
 
-`svg` element has no long tap menu so no Save Image option.
+Another option is the Photos app. Throughtout my research I have verified that
+the Photos app on iOS leaves PNG metadata intact and I have managed to store up
+to **10 MB** in a `tEXt` chunk of a PNG image that I was able to restore, too.
 
-`img` element pointing to an SVG file has a Save Image long tap option but the
-image doesn't appear in Photos afterwards - it doesn't work.
+The theoretical maximum for the `tEXt` chunk size is 2 GB, but generating that
+amount gets tricky in the browser, especially because my implementation as of now
+uses strings for comparison. I believe the current number is not final but I don't
+believe I will be able to reach the theoretical maximum.
 
-`a` element leading to an SVG file opens it in Safari with Save Image available
-under the Share button, but it doesn't work either, nothing appears in Photos.
-**However** a Save to Files option is available in the Share menu as well.
-This option is available for files that Safari can't display and SVGs (which it
-can display) but not files it can display (text files, HTML, …).
-
-On Wikipedia Save Image on an SVG works because it serves a pre-rendered PNG.
-
-I tried generating a PNG using `canvas` and appending Base64 encoded data to it
-but it breaks the image preview in Safari and as a result the Save Image option
-is no longer presented.
-
-I will instead try to use a PNG textual chunk as those can go up to 2 gigabytes:
-
-> Text string can be of any length from zero bytes up to the maximum permissible
-> chunk size less the length of the keyword and separator.
-
-http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
-
-> Every chunk has the same structure: a 4-byte length, a 4-byte chunk type, 0 to
-> 2147483647 bytes of chunk data, and a 4-byte cyclic redundancy check value.
-
-http://www.libpng.org/pub/png/book/chapter08.html
-
----
-
-Right now I have a PNG generator which is capable of inserting a tEXt chunk with
-JSON before the IEND chunk and infrastructure that allows the user to reupload
-the downloaded image for checking if the contents of the chuck got disrupted.
+Right now I have a PNG generator which is capable of inserting a `tEXt` chunk
+before the `IEND` chunk and infrastructure that allows the user to reupload
+the downloaded image for checking if the contents of the chuck got disrupted or
+not. Using binary search, the user is able to zero in on the approximate limit:
 
 So far the largest payload I was able to generate and restore was **10 MB**.
 
-## To-Do
-
-Find the largest chunk that will not get corrupted by iOS. So far:
-
-- 10M works!
 - 15M freezes during generation?
 - 20M crashes tab
 - 25M crashes and restores tab during generation
 - 50M freezes during generation?
 - 100M crashes and restores tab during generation
 
+## To-Do
+
 Do not generate nor compare as strings, instead generate bytes directly to
 `dataUint8Array` and remove `payload` (and maybe `keyword`) and compare by
 checking that all bytes in `slice` have the same value - the char code of `_`.
 
-Cross-reference or merge with the `ios-photos-metadata` repository.
-
 Use `a[download]` when iOS 13 is out and it is supported in Safari.
 
-See if using a non-standard keyword (like the program name) will have the same
-treatment or if it will be handled differently by iOS.
+See if using a non-standard keyword (like the program name, or none/empty) will
+have the same behavior or if it will be treated differently by iOS.
