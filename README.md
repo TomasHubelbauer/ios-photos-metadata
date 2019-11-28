@@ -50,9 +50,11 @@ metadata is lost.
 
 ## To-Do
 
-Generate a JPG with EXIF metadata and see if WhatsApp will preserve the EXIF.
+### Generate a JPG with EXIF metadata and see if WhatsApp will preserve the EXIF
 
-Use `a[download]` when iOS 13 is out and it is supported in Safari.
+### Use `a[download]` when iOS 13 is out and it is supported in Safari
 
-See if using a non-standard keyword (like the program name, or none/empty) will
-have the same behavior or if it will be treated differently by iOS.
+### See if using a non-standard keyword will be treated differently
+
+Like the program name, or none/empty - will it have the same behavior or will
+it be treated differently by iOS?
