@@ -52,7 +52,9 @@ metadata is lost.
 
 ### Generate a JPG with EXIF metadata and see if WhatsApp will preserve the EXIF
 
-### Use `a[download]` when iOS 13 is out and it is supported in Safari
+### Use `a[download]`
+
+iOS 13 is out and it is now supported in Safari
 
 ### See if using a non-standard keyword will be treated differently
 
