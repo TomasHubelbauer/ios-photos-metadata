@@ -60,3 +60,8 @@ iOS 13 is out and it is now supported in Safari
 
 Like the program name, or none/empty - will it have the same behavior or will
 it be treated differently by iOS?
+
+### Document that in iOS 13 generalized file downloading solves this issue
+
+Arbitrary downloads can be saved to and read from the Files app rendering this
+whole idea obsolete.
